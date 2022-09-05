@@ -1,9 +1,41 @@
-version: "2"
+version: "3.0"
 
 services:
   rabbitmq:
     image: rabbitmq:3.9-management-alpine
-    hostname: localhost
+    container_name: rabbitmq
+    restart: always
+    env_file:
+      - .env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    networks:
+      - queue-network
     ports:
       - "5672:5672"
       - "15672:15672"
+
+  private-app:
+    build: ./private-app
+    container_name: private_app
+    restart: always
+    depends_on:
+      - rabbitmq
+    networks:
+      - queue-network
+    ports:
+      - "8081:8081"
+#
+  public-app:
+    build: ./public-app
+    container_name: public_app
+    restart: always
+    depends_on:
+      - private-app
+    networks:
+      - queue-network
+    ports:
+      - "8080:8080"
+networks:
+  queue-network:
