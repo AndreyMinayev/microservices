@@ -3,6 +3,7 @@ package com.example.privateapp.config;
 
 
 import com.example.privateapp.services.Consumer;
+import com.example.shared.enums.CardOperation;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -22,14 +23,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-	@Value("${cards.rabbitmq.newCardQueue}")
-	String newCardQueue;
+	@Value("${queue.name}")
+	String queue;
 
-	@Value("${cards.rabbitmq.requestQueue}")
-	String requestQueue;
-
-	@Value("${cards.rabbitmq.deleteQueue}")
-	String deleteQueue;
 
     @Value("${spring.rabbitmq.username}")
     String username;
@@ -40,12 +36,6 @@ public class RabbitMQConfig {
 	@Value("${spring.rabbitmq.password}")
     private String password;
 
-	@Value("${cards.rabbitmq.newCardRoute}")
-	private String newCardRoutingKey;
-	@Value("${cards.rabbitmq.requestRoute}")
-	private String requestRoutingKey;
-	@Value("${cards.rabbitmq.deleteRoute}")
-	private String deleteRoutingKey;
 	@Bean
 	public DirectExchange directExchange() {
 		return new DirectExchange(exchange);
@@ -57,42 +47,34 @@ public class RabbitMQConfig {
 	}
 
 	@Bean
-	Queue getNewCardQueue() {
-		return new Queue(newCardQueue, false);
+	Queue getQueue() {
+		return new Queue(queue, false);
 	}
 
 	@Bean
-	Queue getRequestQueue() {
-		return new Queue(requestQueue, false);
+	Binding declareBindingCreateCard() {
+		return BindingBuilder.bind(getQueue()).to( exchange()).with(CardOperation.CREATE.getId());
 	}
 
 	@Bean
-	Queue getDeleteQueue() {
-		return new Queue(deleteQueue, false);
+	Binding declareBindingDeleteCard() {
+		return BindingBuilder.bind(getQueue()).to( exchange()).with(CardOperation.DELETE.getId());
 	}
 
 	@Bean
-	Binding declareBindingNewCard() {
-		return BindingBuilder.bind(getNewCardQueue()).to( exchange()).with(newCardRoutingKey);
+	Binding declareBindingListCard() {
+		return BindingBuilder.bind(getQueue()).to( exchange()).with(CardOperation.LIST.getId());
 	}
 
 	@Bean
-	Binding declareBindingDelete() {
-		return BindingBuilder.bind(getDeleteQueue()).to(exchange()).with(deleteRoutingKey);
+	Binding declareBindingUpdateCard() {
+		return BindingBuilder.bind(getQueue()).to( exchange()).with(CardOperation.UPDATE.getId());
 	}
-
-	@Bean
-	Binding declareBindingRequest() {
-		return BindingBuilder.bind(getRequestQueue()).to(exchange()).with(requestRoutingKey);
-	}
-
 
 	@Bean
 	public MessageConverter jackson2MessageConverter() {
 		return new Jackson2JsonMessageConverter();
 	}
-
-
 
 	@Bean
 	public RabbitListenerContainerFactory<?> rabbitListenerContainerFactory(ConnectionFactory connectionFactory){

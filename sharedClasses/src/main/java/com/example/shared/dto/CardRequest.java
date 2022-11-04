@@ -6,6 +6,6 @@ import lombok.Builder;
 import java.io.Serializable;
 
 @Builder
-public record RequestDTO(@JsonProperty("type") String type,
-                         @JsonProperty ("value") String value)  implements Serializable {
+public record CardRequest(@JsonProperty("type") String type,
+                          @JsonProperty ("value") String value)  implements Serializable {
 }

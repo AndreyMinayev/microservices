@@ -21,7 +21,11 @@ import javax.persistence.*;
 public class Card implements Serializable {
 
     @Id
-    private Long cardNumber;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column (nullable = false)
+    private String cardNumber;
 
     @Column (nullable = false)
     private String firstName;
